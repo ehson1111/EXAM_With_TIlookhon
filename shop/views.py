@@ -111,4 +111,4 @@ def add_product(request):
     return render(request, 'add_product.html')
 
 def home(request):
-    return render(request, 'home.html', {'message': 'Welcome to the Online Shop!'})
+    return render(request, 'home.html', {'message': 'Welcome to  Online Shop!'})
