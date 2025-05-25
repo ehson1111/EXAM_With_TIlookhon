@@ -1,7 +1,54 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import Product, Cart, Order, OrderItem
+from .models import Product, Cart, Order, OrderItem, User
+from django.shortcuts import get_object_or_404
+
+
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        try:
+            user = User.objects.get(username=username, password=password)
+            request.session['user_id'] = user.id
+            return HttpResponseRedirect(reverse('product_list'))
+        except User.DoesNotExist:
+            return render(request, 'login.html', {'error': 'Invalid credentials'})
+    return render(request, 'login.html')
+
+def user_logout(request):
+    if 'user_id' in request.session:
+        del request.session['user_id']
+    return HttpResponseRedirect(reverse('home'))
+
+def cart_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return HttpResponseRedirect(reverse('login'))
+
+    user = get_object_or_404(User, id=user_id)
+    cart_items = Cart.objects.filter(user=user)
+    total = sum(item.product.price * item.quantity for item in cart_items)
+
+    return render(request, 'cart_view.html', {'cart_items': cart_items, 'total': total})
+
+
+def register_user(request): 
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        first_name = request.POST.get('first_name', '')
+        last_name = request.POST.get('last_name', '')
+        
+        user = User.objects.create(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
+        return HttpResponseRedirect(reverse('login'))
+    
+    return render(request, 'register.html')
+
+
+
 
 
 
@@ -15,22 +62,9 @@ def product_detail(request, product_id):
 
 
 
-def cart_view(request):
-    user = request.user
-    cart_items = Cart.objects.filter(user=user)
-    total_amount = sum(item.product.price * item.quantity for item in cart_items)
-    return render(request, 'cart_view.html', {'cart_items': cart_items, 'total_amount': total_amount})
 
-def add_to_cart(request, product_id):
-    user = request.user
-    product = Product.objects.get(id=product_id)
-    cart_item, created = Cart.objects.get_or_create(user=user, product=product)
+
     
-    if not created:
-        cart_item.quantity += 1
-        cart_item.save()
-    
-    return render(request, 'cart_view.html', {'cart_items': Cart.objects.filter(user=user)})
 
 def remove_from_cart(request, product_id):
     user = request.user
@@ -40,22 +74,40 @@ def remove_from_cart(request, product_id):
     return render(request, 'cart_view.html', {'cart_items': Cart.objects.filter(user=user)})
 
 
+def add_to_cart(request, product_id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return HttpResponseRedirect(reverse('login'))  # Redirect to login if not authenticated
+
+    user = get_object_or_404(User, id=user_id)
+    product = get_object_or_404(Product, id=product_id)
+
+    cart_item, created = Cart.objects.get_or_create(user=user, product=product)
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+
+    return HttpResponseRedirect(reverse('cart_view'))
+
 
 def checkout(request):
-    user = request.user
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return HttpResponseRedirect(reverse('login')) 
+    user = get_object_or_404(User, id=user_id)
     cart_items = Cart.objects.filter(user=user)
-    
-    if not cart_items:
-        return render(request, 'checkout.html', {'message': 'Your cart is empty.'})
-    
-    total_amount = sum(item.product.price * item.quantity for item in cart_items)
-    order = Order.objects.create(user=user, total_amount=total_amount)
-    
-    for item in cart_items:
-        OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
-        item.delete()
-    
-    return render(request, 'checkout.html', {'order': order})
+
+    if request.method == 'POST':
+        total_amount = sum(item.product.price * item.quantity for item in cart_items)
+        order = Order.objects.create(user=user, total_amount=total_amount)
+        
+        for item in cart_items:
+            OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
+            item.delete()
+        
+        return HttpResponseRedirect(reverse('order_list'))
+
+    return render(request, 'checkout.html', {'cart_items': cart_items})
 
 def order_list(request):
     user = request.user

@@ -1,0 +1,8 @@
+<h2>{{ product.name }}</h2>
+<p>{{ product.description }}</p>
+<p>Price: ${{ product.price }}</p>
+{% if product.image %}<img src="{{ product.image.url }}" alt="product image" width="200">{% endif %}
+<a href="{% url 'add_to_cart' product.id %}">Add to Cart</a><br>
+<a href="{% url 'edit_product' product.id %}">Edit</a> |
+<a href="{% url 'delete_product' product.id %}">Delete</a>
+<a href="{% url 'cart_view'%}"></a>
