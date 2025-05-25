@@ -4,11 +4,6 @@ from django.urls import reverse
 from .models import Product, Cart, Order, OrderItem
 
 
-# 1.2 CRUD-функционал
-# Телефоны: добавление, редактирование, удаление; (пользователь) просмотр списка и деталей
-# Корзина: добавление, просмотр, изменение количества, удаление
-# Заказ: оформление, просмотр списка и деталей, изменение статуса
-
 
 def product_list(request):
     products = Product.objects.all()
@@ -43,3 +38,5 @@ def remove_from_cart(request, product_id):
     cart_item.delete()
     
     return render(request, 'cart_view.html', {'cart_items': Cart.objects.filter(user=user)})
+
+
