@@ -64,20 +64,23 @@ def product_detail(request, product_id):
 
 
 
-    
 
 def remove_from_cart(request, product_id):
-    user = request.user
-    cart_item = Cart.objects.get(user=user, product_id=product_id)
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return HttpResponseRedirect(reverse('login'))
+
+    user = get_object_or_404(User, id=user_id)
+    cart_item = get_object_or_404(Cart, user=user, product__id=product_id)
     cart_item.delete()
-    
-    return render(request, 'cart_view.html', {'cart_items': Cart.objects.filter(user=user)})
+
+    return HttpResponseRedirect(reverse('cart_view'))
 
 
 def add_to_cart(request, product_id):
     user_id = request.session.get('user_id')
     if not user_id:
-        return HttpResponseRedirect(reverse('login'))  # Redirect to login if not authenticated
+        return HttpResponseRedirect(reverse('login'))
 
     user = get_object_or_404(User, id=user_id)
     product = get_object_or_404(Product, id=product_id)
