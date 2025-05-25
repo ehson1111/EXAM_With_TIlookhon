@@ -1,17 +1,87 @@
-<h2>Order #{{ order.id }}</h2>
-<p>Status: {{ order.status }}</p>
-<ul>
-  {% for item in order_items %}
-    <li>{{ item.product.name }} - Quantity: {{ item.quantity }}</li>
-  {% endfor %}
-</ul>
+{% extends 'base.html' %}
 
-<form method="post" action="{% url 'update_order_status' order.id %}">
-  {% csrf_token %}
-  <select name="status">
-    <option value="Pending">Pending</option>
-    <option value="Shipped">Shipped</option>
-    <option value="Delivered">Delivered</option>
-  </select>
-  <button type="submit">Update Status</button>
-</form>
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Order #{{ order.id }}</h2>
+    <span class="badge bg-{% if order.status == 'Completed' %}success{% elif order.status == 'Processing' %}primary{% elif order.status == 'Cancelled' %}danger{% else %}secondary{% endif %} p-2">
+        {{ order.status }}
+    </span>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Order Items</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ item.product.image.url }}" class="img-thumbnail me-3" width="60" alt="{{ item.product.name }}">
+                                        <div>
+                                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                                            <small class="text-muted">{{ item.product.description|truncatechars:40 }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>${{ item.product.price }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>${{ item.subtotal }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Order Summary</h5>
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span>${{ order.total_amount }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Shipping:</span>
+                    <span>Free</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Total:</span>
+                    <span>${{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Shipping Information</h5>
+                <hr>
+                <address>
+                    <strong>John Doe</strong><br>
+                    123 Main Street<br>
+                    New York, NY 10001<br>
+                    United States<br>
+                    <abbr title="Phone">P:</abbr> (123) 456-7890
+                </address>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

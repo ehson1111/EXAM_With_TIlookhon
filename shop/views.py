@@ -113,9 +113,23 @@ def checkout(request):
     return render(request, 'checkout.html', {'cart_items': cart_items})
 
 def order_list(request):
-    user = request.user
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return HttpResponseRedirect(reverse('login'))
+
+    user = get_object_or_404(User, id=user_id)
     orders = Order.objects.filter(user=user)
     return render(request, 'order_list.html', {'orders': orders})
+
+def profile(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return HttpResponseRedirect(reverse('login'))  
+
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'profile.html', {'user': user})
+
+
 
 def order_detail(request, order_id):
     order = Order.objects.get(id=order_id)

@@ -1,9 +1,35 @@
-<h2>Login</h2>
-<form method="post">
-  {% csrf_token %}
-  Username: <input type="text" name="username"><br>
-  Password: <input type="password" name="password"><br>
-  <button type="submit">Login</button>
-</form>
-{% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+{% extends 'base.html' %}
 
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card form-container">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Login</h3>
+                {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </button>
+                    <div class="text-center">
+                        <p class="mb-0">Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

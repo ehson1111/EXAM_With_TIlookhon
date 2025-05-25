@@ -1,4 +1,41 @@
-<h1>{{ message }}</h1>
-<a href="{% url 'product_list' %}">View Products</a> |
-<a href="{% url 'login' %}">Login</a> |
-<a href="{% url 'register' %}">Register</a>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">Welcome to ShopEase</h1>
+        <p class="lead mb-5">Discover amazing products at unbeatable prices</p>
+        <a href="{% url 'product_list' %}" class="btn btn-light btn-lg px-4 me-2">
+            <i class="fas fa-shopping-bag me-2"></i> Shop Now
+        </a>
+        {% if not request.session.user_id %}
+        <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg px-4">
+            <i class="fas fa-user-plus me-2"></i> Join Now
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="text-center mb-5">Featured Products</h2>
+    <div class="row">
+        {% for product in featured_products %}
+        <div class="col-md-4">
+            <div class="card">
+                <img src="{{ product.image.url }}" class="card-img-top product-img" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text text-muted">{{ product.description|truncatechars:60 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h5 text-primary">${{ product.price }}</span>
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye me-1"></i> View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
