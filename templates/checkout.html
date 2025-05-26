@@ -1,0 +1,7 @@
+<h2>Checkout</h2>
+{% if message %}
+  <p>{{ message }}</p>
+{% else %}
+  <p>Order placed successfully! Order ID: {{ order.id }}</p>
+{% endif %}
+<a href="{% url 'product_list' %}">Continue Shopping</a>
